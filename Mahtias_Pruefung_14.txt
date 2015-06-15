@@ -16,7 +16,7 @@
 
 
 -- 7 geben sie die namen, vornamen, adressen und die autos alle kunden aus, die an einer fahrt teilgenommen haben und noch nicht bezahlt
--- 8 bisschen dum hier das auto mit ins spiel zu bringen, die abfrage ist sinnlos sie wirft die mitfahrer ohne auto raus.
+@deprecated weil: bisschen dum hier das auto mit ins spiel zu bringen, die abfrage ist sinnlos sie wirft die mitfahrer ohne auto raus.
 
 -- 9 geben sie die namen, vornamen, adressen von kunden aus die an einer fahrt teilgenommen haben und bezahlt  .
 

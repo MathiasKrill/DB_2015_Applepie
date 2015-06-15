@@ -1,0 +1,9 @@
+Gruppenmitglieder Datenbanken Testat:
+Laborgruppen: Lab03, Lab04, Lab05
+
+1. Mathias Krill,	1123286
+2. Kevin Grygosch,	1213183
+3. Kevin Höfle,		1120361
+4. Niat Ogbe,		1130987
+5. Ahmed Balfaqih,	1111995
+6. Adem Tekin,		1028772

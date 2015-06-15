@@ -30,3 +30,18 @@
 -- 13 geben sie an welche mitfahrer (kundennummer, name, vorname) bezahlt haben
 
 -- 14 geben sie an wieviele km jeder kunde in seinen angeboten summiert anbietet
+
+
+-- 15 geben sie für jede strecke die namen , kundennr der kunden an, die für diese ein angebot oder gesuch haben, sortieren sie die strecke aufsteigend.
+
+
+-- 16 geben sie für jede strecke die anzahl der strecken/kunden an, die für diese ein angebot oder gesuch haben, sortieren sie die strecke aufsteigend
+
+
+-- 17 vor und nach name der Kunden die ein Angebot haben das noch nicht zu einem gesuch vermittelt wurde, geordnet nach nachname
+
+
+-- 18 geben sie zu jedem ort den namen der kunden aus, die startort, zwischenhalt oder ziel im angebot dort hatten
+
+
+-- 19geben sie zu jedem ort die anzahl der kunden aus die startort, zwischenhalt oder ziel im angebot und die zahl dehrer die im gesuch dort waren

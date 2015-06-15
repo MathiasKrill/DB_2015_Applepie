@@ -118,3 +118,105 @@ WHERE a.bietender = k.kundennr
 AND a.ort_start = s.ort_start
 AND a.ort_ziel = s.ort_ziel
 GROUP BY k.kundennr;
+
+
+
+-- 15 geben sie für jede strecke die namen , kundennr der kunden an, die für diese ein angebot oder gesuch haben, sortieren sie die strecke aufsteigend.
+SELECT * FROM
+(
+SELECT  a.ort_start, a.ort_ziel, k.kundennr AS kundennummer, k.name, k.vorname FROM kunde k, angebot a,gesuch g
+WHERE a.bietender = k.kundennr
+
+union
+SELECT  g.ort_start, g.ort_ziel, k.kundennr, k.name, k.vorname FROM kunde k, gesuch g
+WHERE g.suchender= k.kundennr
+)
+ORDER BY kundennummer ASC;
+
+
+-- 16 geben sie für jede strecke die anzahl der strecken/kunden an, die für diese ein angebot oder gesuch haben, sortieren sie die strecke aufsteigend
+
+SELECT star, ziel, Count(star) AS Anzahl FROM(
+SELECT bzs.ort_start AS star, bzs.ort_ziel AS ziel FROM beziehung_strecken bzs, angebot a
+WHERE bzs.ort_start = a.ort_start AND bzs.ort_ziel = a.ort_ziel
+OR bzs.ort_ziel = a.ort_start AND bzs.ort_start = a.ort_ziel
+
+UNION all
+
+SELECT bzs.ort_start AS star, bzs.ort_ziel AS ziel FROM beziehung_strecken bzs, angebot a
+WHERE a.ort_ueber = bzs.ort_start  AND a.ort_ziel  = bzs.ort_ziel
+OR a.ort_ueber = bzs.ort_ziel  AND a.ort_ziel  = bzs.ort_start
+OR a.ort_start = bzs.ort_start AND a.ort_ueber = bzs.ort_ziel
+OR a.ort_ziel = bzs.ort_start AND a.ort_ueber = bzs.ort_start
+
+union all
+
+SELECT bzs.ort_start AS star, bzs.ort_ziel AS ziel FROM beziehung_strecken bzs, gesuch g
+WHERE bzs.ort_start = g.ort_start AND bzs.ort_ziel = g.ort_ziel
+OR bzs.ort_ziel = g.ort_start AND bzs.ort_start = g.ort_ziel
+)
+GROUP BY star, ziel
+
+ORDER BY anzahl ASC;
+
+
+
+
+-- 17 vor und nach name der Kunden die ein Angebot haben das noch nicht zu einem gesuch vermittelt wurde, geordnet nach nachname
+
+
+SELECT * FROM(
+SELECT k.kundennr, k.vorname, k.name AS nachname FROM angebot a,kunde k
+WHERE  a.bietender = k.kundennr
+
+minus
+
+
+SELECT k.kundennr, k.vorname, k.name AS nachname FROM angebot a,kunde k, beziehung_vermittlung bzv
+WHERE  a.bietender = k.kundennr
+AND bzv.angebotnr = a.angebotnr
+
+) ORDER BY nachname DESC;
+
+
+
+-- 18 geben sie zu jedem ort den namen der kunden aus, die startort, zwischenhalt oder ziel im angebot dort hatten
+
+
+SELECT o.name, k.name FROM ort o, kunde k, angebot a
+WHERE k.kundennr = a.bietender
+AND
+(
+a.ort_start = o.name
+OR a.ort_ueber = o.name
+OR a.ort_ziel = o.name)
+ORDER BY o.name DESC;
+
+
+
+
+-- 19geben sie zu jedem ort die anzahl der kunden aus die startort, zwischenhalt oder ziel im angebot und die zahl dehrer die im gesuch dort waren
+
+SELECT ortsname, Sum(AnzahlKunden) FROM
+(
+SELECT o.name AS ortsname, Count(k.name) AS AnzahlKunden FROM ort o, kunde k, angebot a
+WHERE k.kundennr = a.bietender
+AND
+(
+a.ort_start = o.name
+OR a.ort_ueber = o.name
+OR a.ort_ziel = o.name)
+GROUP BY o.name
+
+UNION all
+
+SELECT o.name AS ortsname, Count(k.name) AS AnzahlKunden FROM ort o, kunde k, gesuch g
+WHERE k.kundennr = g.suchender
+AND
+(
+g.ort_start = o.name
+OR g.ort_ziel = o.name)
+GROUP BY o.name
+)
+GROUP BY ortsname;
+

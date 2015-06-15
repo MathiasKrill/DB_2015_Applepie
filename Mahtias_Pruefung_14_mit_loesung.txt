@@ -1,0 +1,120 @@
+
+-- 1 Geben Sie alle Strecken aus die angeboten werden und wieviele plätze
+
+SELECT a.angebotnr,a.ort_start "start/ueber" , a.ort_ziel "ziel",a.gebotene_plaetze FROM angebot a
+union
+SELECT a.angebotnr,a.ort_ueber "start/ueber", a.ort_ziel "ziel", a.gebotene_plaetze FROM angebot a
+WHERE a.ort_ueber IS NOT null;
+
+
+-- hier ohne union , der trick ist einfach ziele zu genrieren mit zweimal ort , da man kein ziel hat nachdem man sucht sind mögliche ziele kein bestimmtes sondern die aus der ortsliste.
+-- leider kann man damit niht zählen !
+SELECT DISTINCT a.angebotnr, o1.name, o2.name FROM ort o1, ort o2, angebot a
+WHERE
+(a.ort_start = o1.name AND a.ort_ziel = o2.name) OR
+(a.ort_ueber = o1.name AND a.ort_ziel = o2.name)
+ order BY a.angebotnr asc ;
+
+
+-- 2 geben sie alle Angebotene Strecken an , sowie die strecken welche "über-zielen" sind und die anzahl wie häufig diese strecke angeboten wird
+SELECT Count(*), start_ueber,ziel FROM
+(
+SELECT a.angebotnr,a.ort_start AS start_ueber , a.ort_ziel AS ziel,a.gebotene_plaetze FROM angebot a
+union
+SELECT a.angebotnr,a.ort_ueber as start_ueber, a.ort_ziel AS ziel, a.gebotene_plaetze FROM angebot a
+WHERE a.ort_ueber IS NOT NULL
+union
+SELECT a.angebotnr,a.ort_start as start_ueber, a.ort_ueber AS ziel, a.gebotene_plaetze FROM angebot a
+WHERE a.ort_ueber IS NOT NULL
+
+)
+GROUP BY start_ueber,ziel;
+
+
+-- 3 geben sie alle teilstrecken aus die angeboten werden sowie die gesamtestrecke.
+SELECT a.angebotnr,a.ort_start AS start_ueber , a.ort_ziel AS ziel,a.gebotene_plaetze FROM angebot a
+union
+SELECT a.angebotnr,a.ort_ueber as start_ueber, a.ort_ziel AS ziel, a.gebotene_plaetze FROM angebot a
+WHERE a.ort_ueber IS NOT NULL
+union
+SELECT a.angebotnr,a.ort_start as start_ueber, a.ort_ueber AS ziel, a.gebotene_plaetze FROM angebot a
+WHERE a.ort_ueber IS NOT NULL  ;
+
+
+-- 4 Geben sie alle strecken aus die gesucht werden werden und wieviele plätze
+
+SELECT g.gesuchnr, g.ort_start "start",g.ort_ziel "ziel", g.Gesuchte_plaetze FROM gesuch g;
+
+-- 5 Geben sie alle angebote strecken an im zeitraum 01.06 bis  04.06 10:30 und deren plätze
+
+SELECT a.angebotnr, a.ort_start, a.ort_ziel, a.gebotene_plaetze, a.abfahrt, a.fruehste_startzeit, a.spaeteste_startzeit FROM angebot a
+WHERE a.abfahrt >= To_Date('01-06-2015 00:00', 'dd-mm-yyyy hh24:mi') AND a.abfahrt <= To_Date ('04-06-2015 10:30', 'dd-mm-yyyy hh24:mi')
+OR a.fruehste_startzeit >= To_Date('01-06-2015 00:00', 'dd-mm-yyyy hh24:mi')AND a.abfahrt <= To_Date ('04-06-2015 10:30', 'dd-mm-yyyy hh24:mi')
+OR a.spaeteste_startzeit >= To_Date('01-06-2015 00:00', 'dd-mm-yyyy hh24:mi')AND a.abfahrt <= To_Date ('04-06-2015 10:30', 'dd-mm-yyyy hh24:mi');
+
+
+-- 6 geben sie die anzahl aller fahrten von mannheim nach hannover die angeboten angeboten werden aus.
+
+--lösung: hier sind "Mannheim" und "Hannover" fest in die spalten eingefgt und ich zähle die gruppierten paare, die zahl davon wird vorne eingefügt.
+
+SELECT Count(*) "Anzahl", 'Mannheim'"Start",'Hannover' "Ziel" FROM angebot a
+WHERE a.ort_start ='Mannheim' AND   a.ort_ziel ='Hannover'
+OR  a.ort_ueber ='Mannheim' AND   a.ort_ziel ='Hannover'
+OR  a.ort_start ='Mannheim' AND   a.ort_ueber ='Hannover'
+GROUP BY a.ort_start;
+
+
+
+-- 7 geben sie die namen, vornamen, adressen und die autos alle kunden aus, die an einer fahrt teilgenommen haben und noch nicht bezahlt
+-- 8 bisschen dum hier das auto mit ins spiel zu bringen, die abfrage ist sinnlos sie wirft die mitfahrer ohne auto raus.
+
+SELECT DISTINCT k.kundennr, k.name, k.vorname, k.plz, k.stadt, k.plz, a.modell, a.kennzeichen FROM kunde k,auto a, beziehung_auto_kunde bza, beziehung_vermittlung bzv
+WHERE   bza.kennzeichen = a.kennzeichen
+AND     bza.kundennr = k.kundennr
+AND     (bzv.fahrer = k.kundennr OR bzv.mitfahrer = k.kundennr)
+AND     bzv.gebuehr = 'bezahlt';
+
+
+
+-- 9 geben sie die namen, vornamen, adressen von kunden aus die an einer fahrt teilgenommen haben und bezahlt  .
+
+SELECT k.kundennr, k.name, k.vorname, k.plz, k.stadt, k.plz FROM kunde k,  beziehung_vermittlung bzv
+WHERE k.kundennr = bzv.mitfahrer
+AND bzv.gebuehr = 'bezahlt'
+ORDER BY kundennr ASC;
+
+
+-- 10 geben sie die namen, vornamen, adressen von kunden aus die an einer fahrt teilgenommen haben und noch nicht bezahlt  .
+
+SELECT k.kundennr, k.name, k.vorname, k.plz, k.stadt, k.plz FROM kunde k,  beziehung_vermittlung bzv
+WHERE k.kundennr = bzv.mitfahrer
+AND bzv.gebuehr IS NULL
+ORDER BY kundennr ASC;
+
+
+-- 11 geben sie an wieviele noch nicht bezahlt haben
+
+SELECT Count(*) "Nicht bezahlt" FROM beziehung_vermittlung bzv
+WHERE bzv.gebuehr IS NULL;
+
+
+-- 12 geben sie an wieviele bezahlt haben
+
+SELECT Count(*) "bezahlt" FROM beziehung_vermittlung bzv
+WHERE bzv.gebuehr ='bezahlt';
+
+-- 13 geben sie an welche mitfahrer (kundennummer, name, vorname) bezahlt haben
+
+SELECT k.kundennr, k.name, k.vorname FROM beziehung_vermittlung bzv, kunde k
+WHERE
+bzv.gebuehr = 'bezahlt'
+AND k.kundennr = bzv.mitfahrer;
+
+
+-- 14 geben sie an wieviele km jeder kunde in seinen angeboten summiert anbietet
+
+SELECT Sum(s.km), k.kundennr FROM Beziehung_Strecken s, angebot a, kunde k
+WHERE a.bietender = k.kundennr
+AND a.ort_start = s.ort_start
+AND a.ort_ziel = s.ort_ziel
+GROUP BY k.kundennr;

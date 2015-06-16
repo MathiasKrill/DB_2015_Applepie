@@ -1,0 +1,26 @@
+-- 20 zeigen sie die anzahl aller angebote an die auf gesuche von ihren orten her passen.
+
+SELECT a.ort_start, a.ort_ziel FROM angebot a 
+ORDER BY ort_start;
+
+
+SELECT g.ort_start, g.ort_ziel FROM gesuch g
+ORDER BY ort_start;
+
+SELECT Count(g.gesuchnr), a.ort_start, a.ort_ziel FROM angebot a, gesuch g
+WHERE (a.ort_start = g.ort_start  AND a.ort_ziel = g.ort_ziel)
+OR    (a.ort_ueber = g.ort_start  AND a.ort_ziel = g.ort_ziel)
+OR    (a.ort_start = g.ort_start  AND a.ort_ueber = g.ort_ziel)
+GROUP BY g.gesuchnr, a.ort_start, a.ort_ziel ;
+
+
+-- selektiere alle die mit M anfangen
+
+SELECT k.vorname, k.name FROM kunde k
+WHERE k.name LIKE 'M%';
+
+-- selektiere alle strecken die mehr als 100 km isind
+
+SELECT bz.km, bz.ort_start, bz.ort_ziel FROM beziehung_strecken bz
+WHERE bz.km > 100;
+

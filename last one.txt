@@ -1,0 +1,350 @@
+--Geben Sie die durchschnittliche Anzahl an Gesuchen pro Kunde aus
+
+SELECT Avg(Count(k.kundennr)) FROM kunde k, gesuch g
+WHERE k.kundennr = g.suchender (+)
+GROUP BY k.kundennr;
+
+
+SELECT Avg(Count(k.kundennr))"Mittelwert der anzahl Gesuche" FROM kunde k, gesuch g
+WHERE k.kundennr = g.suchender(+) 
+GROUP BY k.kundennr;
+
+-- Geben sie alle kundennummern aus mit mehr als 1 gesuchen
+SELECT Count(k.kundennr)"anzahl gesuche", g.suchender "Kundennummer" FROM kunde k, gesuch g
+WHERE k.kundennr = g.suchender
+GROUP BY k.kundennr HAVING Count(k.kundennr) > 1;
+
+
+--d)	Geben Sie die  Anzahl an Autos pro Kunde aus
+
+SELECT Count(a.kennzeichen) , k.kundennr FROM auto a, beziehung_auto_kunde bz, kunde k
+WHERE a.kennzeichen(+) = bz.kennzeichen
+AND k.kundennr= bz.kundennr(+)
+GROUP BY k.kundennr
+ORDER BY k.kundennr;
+                    
+
+--dd)	Geben Sie die durchschnittliche Anzahl an Autos pro Kunde aus
+   
+SELECT Avg(Count(a.kennzeichen)) "mittl. menge an auto pro kunde" from auto a, beziehung_auto_kunde bz, kunde k
+WHERE a.kennzeichen(+) = bz.kennzeichen
+AND k.kundennr = bz.kundennr(+)
+GROUP BY k.kundennr;
+
+
+SELECT Auto.Kennzeichen, Count(kunde.kundennr) "DurchschnittAuto" FROM Auto,Kunde,beziehung_auto_kunde 
+WHERE auto.kennzeichen = beziehung_auto_kunde.kennzeichen 
+AND beziehung_auto_kunde.kundennr = kunde.kundennr
+GROUP BY auto.kennzeichen    ;
+
+
+
+SELECT Avg(Count(Auto.Kennzeichen)) "DurchschnittAuto" FROM Auto,Kunde,beziehung_auto_kunde 
+WHERE auto.kennzeichen = beziehung_auto_kunde.kennzeichen AND beziehung_auto_kunde.kundennr = kunde.kundennr
+GROUP BY auto.kennzeichen;
+
+
+
+--c)	Geben Sie die  Anzahl an Vermittlungen aus pro Angebot
+
+SELECT a.angebotnr, Count(bzv.angebotnr) FROM angebot a, beziehung_vermittlung bzv
+WHERE a.angebotnr = bzv.angebotnr (+)
+GROUP BY a.angebotnr; 
+
+
+--c)	Geben Sie die durchschnittliche Anzahl an Vermittlungen aus pro Angebot
+
+SELECT  Avg(Count(bzv.angebotnr)) FROM angebot a, beziehung_vermittlung bzv
+WHERE a.angebotnr = bzv.angebotnr (+)
+GROUP BY a.angebotnr; 
+
+
+SELECT Count(DISTINCT beziehung_vermittlung.angebotnr)/ Count(distinct angebot.angebotnr) FROM beziehung_vermittlung, angebot ;
+
+--d)	Geben Sie die durchschnittliche Anzahl an Angeboten pro Strecke aus
+
+SELECT  Avg(Count(bzv.gesuchnr)) FROM gesuch g, beziehung_vermittlung bzv
+WHERE g.gesuchnr = bzv.gesuchnr (+)
+GROUP BY g.gesuchnr; 
+
+
+
+--a)	Geben Sie Zielort und Streckenlänge aller Angebote an, die länger sind als die durchschnittliche Streckenlänge aller Strecken sind
+
+
+SELECT bz.km AS kilometer, bz.ort_start,bz.ort_ziel, Count(a.angebotnr)"Anzahl strecken" FROM beziehung_strecken bz , angebot a
+WHERE a.ort_start(+) = bz.ort_start AND a.ort_ziel(+) = bz.ort_ziel
+GROUP BY bz.ort_start , bz.ort_ziel, bz.km
+HAVING bz.km > (SELECT Avg(km) FROM beziehung_strecken);
+
+
+
+SELECT angebot.ORT_ziel,beziehung_strecken.km FROM angebot, beziehung_strecken 
+ WHERE angebot.ORT_ziel = beziehung_strecken.ORT_ziel
+ AND angebot.ORT_START = beziehung_strecken.ORT_Start 
+ AND (SELECT Avg(km) FROM beziehung_strecken)  < beziehung_strecken.km;
+
+
+
+-- berechnen sie die benziehnkosten für und gebühr für alle angebote
+
+SELECT (bz.km*p.benzinkostenbeteiligung)+p.vermittlungsgebuer "kosten", bz.km, bz.ort_start, bz.ort_ziel FROM beziehung_strecken bz, parameter p,angebot a
+WHERE a.ort_ziel = bz.ort_ziel
+AND a.ort_start = bz.ort_start
+OR a.ort_start = bz.ort_ziel AND a.ort_ziel = bz.ort_start;
+
+
+-- berechnen sie alle angebote die günstiger sind als 30 eur inklusive gebühr und benzienkostenbeteiligung für alle angebote
+
+SELECT (bz.km*p.benzinkostenbeteiligung)+p.vermittlungsgebuer "kosten", bz.km, bz.ort_start, bz.ort_ziel FROM beziehung_strecken bz, parameter p,angebot a
+WHERE (a.ort_ziel = bz.ort_ziel
+AND a.ort_start = bz.ort_start
+OR a.ort_start = bz.ort_ziel AND a.ort_ziel = bz.ort_start)
+AND (bz.km*p.benzinkostenbeteiligung+p.vermittlungsgebuer) <30;
+
+
+-- gib alle initiallen er namen und vornamen aus von kunden
+
+SELECT Concat(SubStr(vorname,1, 1), SubStr(name,1, 1)) FROM Kunde;
+
+
+-- gib alle kennzeichen aus der autos die grün sind
+
+SELECT a.kennzeichen FROM auto a
+WHERE a.modell LIKE '%Gruen%';
+
+
+-- Geben Sie alle Strecken aus die angeboten werden und wieviele plätze
+
+SELECT o1.name AS startort, o2.name AS zielort, a.gebotene_plaetze AS plaetze FROM ort o1, ort o2, angebot a
+WHERE a.ort_start = o1.name AND a.ort_ziel = o2.name ; 
+
+
+
+-- 2 geben sie alle Angebotene Strecken an , sowie die strecken welche "über-zielen" sind und die anzahl wie häufig diese strecke angeboten wird
+       
+
+SELECT o1.name AS startort, o2.name AS zielort, Count(a.angebotnr) AS anzahl FROM ort o1, ort o2, angebot a
+WHERE a.ort_ueber = o1.name AND a.ort_ziel = o2.name  
+OR a.ort_start = o1.name AND a.ort_ueber = o2.name
+GROUP BY o1.name, o2.name
+
+UNION all
+
+SELECT o1.name AS startort, o2.name AS zielort,Count(a.angebotnr) AS anzahl FROM ort o1, ort o2, angebot a
+WHERE a.ort_start = o1.name AND a.ort_ziel = o2.name
+GROUP BY o1.name, o2.name;   
+
+
+
+
+-- 3 geben sie alle teilstrecken aus die angeboten werden sowie die gesamtestrecke.
+
+
+
+SELECT o1.name AS startort, o2.name AS zielort, a.angebotnr AS anzahl FROM ort o1, ort o2, angebot a
+WHERE a.ort_ueber = o1.name AND a.ort_ziel = o2.name  
+OR a.ort_start = o1.name AND a.ort_ueber = o2.name;
+
+SELECT o1.name AS startort, o2.name AS zielort,a.angebotnr AS anzahl FROM ort o1, ort o2, angebot a
+WHERE a.ort_start = o1.name AND a.ort_ziel = o2.name    ;
+
+
+
+-- 5 Geben sie alle angebote strecken an im zeitraum 01.06 bis  04.06 10:30 und deren plätze
+
+SELECT * FROM beziehung_strecken bs,angebot a
+WHERE
+    (a.abfahrt >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') OR a.abfahrt >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi'))
+    
+     AND a.abfahrt <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+
+AND((a.ort_start = bs.ort_start AND a.ort_ziel = bs.ort_ziel)
+OR (a.ort_start = bs.ort_start AND a.ort_ueber = bs.ort_ziel)
+OR (a.ort_ueber = bs.ort_start AND a.ort_ziel = bs.ort_ziel)
+OR (a.ort_start = bs.ort_ziel AND a.ort_ueber = bs.ort_start)
+OR (a.ort_ueber = bs.ort_ziel AND a.ort_ziel = bs.ort_start) 
+OR (a.ort_start = bs.ort_ziel AND a.ort_ziel = bs.ort_start))
+ORDER BY abfahrt ASC;
+
+
+SELECT * from angebot a
+WHERE
+    a.abfahrt >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND a.abfahrt <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    OR
+    a.fruehste_startzeit >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND a.fruehste_startzeit <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    OR
+    a.spaeteste_startzeit >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND a.spaeteste_startzeit <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    ;
+
+
+SELECT * from angebot a
+WHERE
+    a.abfahrt >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND a.abfahrt <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    OR
+    a.fruehste_startzeit >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') --AND a.fruehste_startzeit <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    AND
+    a.spaeteste_startzeit <= To_Date('04-06-2015 00:00','DD-MM-YYYY HH24:mi')-- AND a.spaeteste_startzeit <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    ;
+
+SELECT * from angebot a
+WHERE
+    a.abfahrt >= To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND a.abfahrt <= To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    OR
+    a.fruehste_startzeit between To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND  To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    OR
+    a.spaeteste_startzeit BETWEEN To_Date('01-06-2015 00:00','DD-MM-YYYY HH24:mi') AND To_Date('04-06-2015 10:30','DD-MM-YYYY HH24:mi')
+    ;
+
+
+
+
+    SELECT a.ort_start, a.ort_ueber, a.ort_ziel, g.ort_start, g.ort_ziel FROM angebot a, gesuch g
+WHERE 
+
+
+a.ort_start = g.ort_start AND a.ort_ziel = g.ort_ziel
+OR
+a.ort_start = g.ort_ziel AND a.ort_ueber = g.ort_ziel
+OR
+a.ort_ueber = g.ort_start AND a.ort_ziel = g.ort_ziel     ;
+
+
+
+--angebote und gesuche die zeitlich und örtlich zueinander passen
+
+
+
+
+--angebote und gesuche die zeitlich und ordneltich zueinander passen
+SELECT angebotnr, gesuchnr  FROM angebot,gesuch WHERE (
+angebot.abfahrt = gesuch.abfahrt OR ( 
+angebot.fruehste_startzeit >= gesuch.fruehste_startzeit AND 
+angebot.spaeteste_startzeit <= gesuch.spaeteste_startzeit)  
+ OR   (
+angebot.abfahrt >= gesuch.fruehste_startzeit AND
+angebot.abfahrt <= gesuch.spaeteste_startzeit) 
+ OR (
+gesuch.abfahrt >= angebot.fruehste_startzeit AND
+gesuch.abfahrt <= gesuch.spaeteste_startzeit )
+) 
+AND  
+(
+angebot.ort_start = gesuch.ort_start AND angebot.ort_ziel = gesuch.ort_ziel OR
+angebot.ort_ueber = gesuch.ort_start AND angebot.ort_Ziel = gesuch.ort_ziel OR
+angebot.ort_ueber = gesuch.ort_ziel  AND angebot.ort_start = gesuch.ort_start
+)  
+                            ;
+
+
+SELECT a.angebotnr, g.gesuchnr   FROM angebot a, gesuch g
+WHERE 
+
+(
+a.ort_start = g.ort_start AND a.ort_ziel = g.ort_ziel
+OR
+a.ort_start = g.ort_ziel AND a.ort_ueber = g.ort_ziel
+OR
+a.ort_ueber = g.ort_start AND a.ort_ziel = g.ort_ziel
+)
+AND
+(
+a.abfahrt >= g.abfahrt AND a.abfahrt <= g.abfahrt
+OR
+a.fruehste_startzeit >= g.fruehste_startzeit
+OR 
+a.spaeteste_startzeit <= g.spaeteste_startzeit
+);
+
+
+
+
+--angebote und gesuche die zeitlich und ordneltich zueinander passen
+SELECT * FROM angebot,gesuch WHERE (
+angebot.abfahrt = gesuch.abfahrt OR ( 
+angebot.fruehste_startzeit >= gesuch.fruehste_startzeit AND 
+angebot.spaeteste_startzeit <= gesuch.spaeteste_startzeit)   OR   (
+angebot.abfahrt >= gesuch.fruehste_startzeit AND
+angebot.abfahrt <= gesuch.spaeteste_startzeit)      OR (
+gesuch.abfahrt >= angebot.fruehste_startzeit AND
+gesuch.abfahrt <= gesuch.spaeteste_startzeit )) AND  (
+angebot.ort_start = gesuch.ort_start AND angebot.ort_ziel = gesuch.ort_ziel OR
+angebot.ort_ueber = gesuch.ort_start AND angebot.ort_Ziel = gesuch.ort_ziel OR
+angebot.ort_ueber = gesuch.ort_ziel  AND angebot.ort_start = gesuch.ort_start
+)                                                                            ;
+ 
+
+
+
+
+SELECT *  FROM angebot a, gesuch g
+WHERE 
+(
+a.ort_start = g.ort_start AND a.ort_ziel = g.ort_ziel
+OR
+a.ort_start = g.ort_start AND a.ort_ueber = g.ort_ziel
+OR
+a.ort_ueber = g.ort_start AND a.ort_ziel = g.ort_ziel
+)
+AND
+(
+a.abfahrt >= g.abfahrt AND a.abfahrt <= g.abfahrt
+OR
+a.fruehste_startzeit >= g.fruehste_startzeit 
+or
+a.spaeteste_startzeit <= g.spaeteste_startzeit
+);
+
+
+
+
+
+
+
+
+
+
+SELECT a.ort_start AS start_ueber , a.ort_ziel AS ziel FROM angebot a  ;
+
+
+SELECT * FROM angebot a, gesuch g WHERE (
+a.ort_start = g.ort_start AND
+a.ort_ziel = g.ort_ziel OR
+a.ort_start = g.ort_start AND 
+a.ort_ueber = g.ort_ziel OR 
+a.ort_ueber = g.ort_start AND
+ a.ort_ziel = g.ort_ziel 
+) 
+AND 
+(
+a.abfahrt = g.abfahrt OR
+(a.spaeteste_startzeit >= g.fruehste_startzeit AND
+a.fruehste_startzeit <= g.spaeteste_startzeit) OR
+(a.abfahrt <= g.spaeteste_startzeit AND
+a.abfahrt >= g.fruehste_startzeit) OR
+(g.abfahrt <= a.spaeteste_startzeit AND
+g.abfahrt >= a.fruehste_startzeit)
+);
+
+
+SELECT *  FROM angebot a, gesuch g
+WHERE 
+(
+a.ort_start = g.ort_start AND a.ort_ziel = g.ort_ziel
+OR
+a.ort_start = g.ort_start AND a.ort_ueber = g.ort_ziel
+OR
+a.ort_ueber = g.ort_start AND a.ort_ziel = g.ort_ziel
+)
+AND (
+Trunc(a.abfahrt) = Trunc(g.abfahrt) 
+OR
+(a.spaeteste_startzeit >= g.fruehste_startzeit AND a.fruehste_startzeit <= g.spaeteste_startzeit) 
+OR
+(a.abfahrt <= g.spaeteste_startzeit AND a.abfahrt >= g.fruehste_startzeit)
+OR
+(g.abfahrt <= a.spaeteste_startzeit AND g.abfahrt >= a.fruehste_startzeit)
+);
+
+
+  
